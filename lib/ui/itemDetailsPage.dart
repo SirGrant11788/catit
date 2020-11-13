@@ -19,7 +19,7 @@ class EditProductPage extends StatefulWidget {
 }
 
 class _EditProductPageState extends State<EditProductPage> {
-  final db = DatabaseHelper.instance;
+  final db = DatabaseHelper();
   String temp;
 
   @override
