@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
@@ -18,12 +17,9 @@ class EditProductPage extends StatefulWidget {
 class _EditProductPageState extends State<EditProductPage> {
   final db = DatabaseHelper.instance;
   String temp;
+
   @override
-  Widget build(
-      BuildContext context,
-      ) {
-
-
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.blueGrey[50],
       appBar: AppBar(
@@ -51,7 +47,6 @@ class _EditProductPageState extends State<EditProductPage> {
               deleteItem('${widget.editDb['_id']}','${widget.editDb['name']}');
             },
           ),
-
         ],
       ),
       body: SingleChildScrollView(
@@ -90,7 +85,6 @@ class _EditProductPageState extends State<EditProductPage> {
                           enabledBorder: OutlineInputBorder(
                             borderSide:
                             BorderSide(color: Colors.blue, width: 1.0),
-
                           ),
                           border: OutlineInputBorder(),
                           hintText: '${widget.editDb[widget.colDb[index]]}',
@@ -98,9 +92,7 @@ class _EditProductPageState extends State<EditProductPage> {
                           suffixIcon:IconButton(
                               icon: Icon(Icons.save),
                               onPressed: () {
-
                                 updateItem('${widget.editDb['_id']}','${widget.colDb[index]}', '$temp');
-
                                 Fluttertoast.showToast(
                                   msg: '${widget.editDb[widget.colDb[index]]} changed to $temp',
                                   toastLength: Toast.LENGTH_LONG,
@@ -133,8 +125,7 @@ class _EditProductPageState extends State<EditProductPage> {
     );
   }
 
-  updateItem(id,col,name) async{
-
+  updateItem(id,col,name) async {
     await db.updateItemQuery(id,col,name);
     if('$col'== 'name'){
       await db.updateQueryFavName(id,name);
@@ -146,5 +137,4 @@ class _EditProductPageState extends State<EditProductPage> {
     await db.updateItemQuery(id,col,'${image.uri}');
     print('$col:${image.uri} UPDATED');
   }
-
 }

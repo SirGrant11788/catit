@@ -1,11 +1,9 @@
 import 'dart:io';
-
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
-
   static final _databaseName = "MyDatabase.db";
   static final _databaseVersion = 1;
 
@@ -17,10 +15,6 @@ class DatabaseHelper {
   static final columnId = '_id';
   static final columnName = 'name';
   static final columnCat = 'cat';
-  // static final columnSize = 'size';
-  // static final columnFit = 'fit';
-  // static final columnWeather = 'weather';
-  // static final columnRating = 'rating';
   static final columnDesc = 'desc';
   static final columnPic = 'pic';
 
@@ -66,10 +60,6 @@ class DatabaseHelper {
             $columnDesc TEXT,
             $columnPic TEXT
           );''');
-    // $columnSize TEXT,
-    //   $columnFit TEXT,
-    //   $columnWeather TEXT,
-    //   $columnRating TEXT,
 
     await db.execute('''
 CREATE TABLE IF NOT EXISTS $tableFav (
@@ -113,7 +103,6 @@ CREATE TABLE IF NOT EXISTS $tablePack (
   }
   Future insertQuery(col,name,item) async {
     Database db = await instance.database;
-    //return await db.rawQuery('''INSERT INTO $table ($col) VALUES ('$name')''');
     return await db.rawQuery('''UPDATE $table SET $col = '$name' WHERE $columnName = '$item' ''');//need to change from name to id
   }
 
@@ -135,12 +124,6 @@ CREATE TABLE IF NOT EXISTS $tablePack (
     Database db = await instance.database;
     return await db.rawQuery("PRAGMA table_info(" + table + ")", null);
   }
-
-  // //ALL catagories
-  // Future<List<Map<String, dynamic>>> queryAllCats() async {
-  //   Database db = await instance.database;
-  //   return await db.query(table);
-  // }
 
   // All of the methods (insert, query, update, delete) can also be done using
   // raw SQL commands. This method uses a raw query to give the row count.
@@ -164,10 +147,6 @@ CREATE TABLE IF NOT EXISTS $tablePack (
     int id = row[columnId];
     return await db.update(table, row, where: '$columnId = ?', whereArgs: [id]);
   }
-  // Future updateQuery(id,name,cat,size,fit,weather,rating,desc,pic) async {
-  //   Database db = await instance.database;
-  //   return await db.rawQuery('''UPDATE $table SET $columnName = '$name', $columnCat = '$cat', $columnSize = '$size', $columnFit = '$fit', $columnWeather = '$weather', $columnRating = '$rating', $columnDesc = '$desc', $columnPic = '$pic' WHERE $columnId = $id''');
-  // }
   Future updateQueryFavName(id,name) async {
     Database db = await instance.database;
     return await db.rawQuery('''UPDATE $tableFav SET $columnFavName = '$name' WHERE $columnId = $id''');
@@ -235,5 +214,4 @@ CREATE TABLE IF NOT EXISTS $tablePack (
     Database db = await instance.database;
     return await db.rawQuery('delete from $tablePack;');
   }
-//debuging
 }

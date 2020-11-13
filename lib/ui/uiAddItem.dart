@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
@@ -26,9 +25,9 @@ class _AddItemPageState extends State<AddItemPage> {
 
   void initState() {
     super.initState();
-    _textFieldControllerName.text = null; //NOT NULL
+    _textFieldControllerName.text = null;
     _textFieldControllerDesc.text = null;
-    _btnSelectedValCat = null; //NOT NULL
+    _btnSelectedValCat = null;
     _textFieldControllerDialogCol = null;
     _textFieldControllerDialog = null;
   }
@@ -242,7 +241,6 @@ class _AddItemPageState extends State<AddItemPage> {
     List<String> tempCatList = List();
     if (catList.length == 0) {
       final allRows = await db.queryAllRows();
-//find all catagories in db
       allRows.forEach((row) {
         for (int i = 0; i < catList.length; i++) {
           tempCatList.add('${catList[i].value}');
@@ -255,7 +253,6 @@ class _AddItemPageState extends State<AddItemPage> {
       catList.add(DropdownMenuItem<String>(
           value: 'Add New Category', child: Text('Add New Category')));
     }
-
   }
 
   Future _pickImageFromCamera() async {
@@ -273,7 +270,6 @@ class _AddItemPageState extends State<AddItemPage> {
       columnListNew,
       columnList,
       _controllers) async {
-    // row to insert
     Map<String, dynamic> row = {
       DatabaseHelper.columnName: '$_textFieldControllerName',
       DatabaseHelper.columnCat: '$_btnSelectedValCat',
@@ -282,16 +278,14 @@ class _AddItemPageState extends State<AddItemPage> {
     };
     final id = await db.insert(row);
 
-    print(
-        'inserted row id: $id name: $_textFieldControllerName cat: $_btnSelectedValCat desc: $_textFieldControllerDesc pic: $_cameraImage');
+    print('inserted row id: $id name: $_textFieldControllerName cat: $_btnSelectedValCat desc: $_textFieldControllerDesc pic: $_cameraImage');
 
-//insertColumn
     if (columnListNew.length != 0 || columnListNew.length != null) {
       for (int i = 0; i < columnListNew.length; i++) {
         await db.insertColumn(columnListNew[i].toString());
       }
     }
-//insertQuery -update
+
     if (columnList.length != 0 || columnList.length != null) {
       for (int i = 0; i < columnList.length; i++) {
         if (columnList[i] != '_id' &&
@@ -317,7 +311,6 @@ class _AddItemPageState extends State<AddItemPage> {
     Navigator.push(context, MaterialPageRoute(builder: (context) => MyApp()));
   }
 
-//add new cat
   _showDialog(BuildContext context, String title, String hint) {
     _textFieldControllerDialog.text = '';
     return showDialog(
@@ -341,7 +334,6 @@ class _AddItemPageState extends State<AddItemPage> {
         });
   }
 
-//add new col
   _showDialogCol(BuildContext context) {
     _textFieldControllerDialogCol.text = '';
     return showDialog(

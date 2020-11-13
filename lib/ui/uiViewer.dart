@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:cat_it/services/db.dart';
-import 'package:cat_it/services/weatherDialog.dart';
 import 'package:cat_it/ui/uiAppHome.dart';
 import 'package:weather/weather.dart';
 
@@ -23,12 +22,10 @@ class _ViewerPageState extends State<ViewerPage> {
   List<Widget> catListWidget = List<Widget>();
   List<ChoiceChip> chipCat = List<ChoiceChip>();
   List catList = List();
-  List<String> prefListCat = List(); //what not to display
+  List<String> prefListCat = List();
 
   String weatherToday = "MyThreads";
   String weatherIcon = '';
-  WeatherStation weatherStation =
-  new WeatherStation("996cc4f3b136aea607960591dd64e7a5");
 
   @override
   Widget build(BuildContext context) {
@@ -49,31 +46,7 @@ class _ViewerPageState extends State<ViewerPage> {
                     size: 20.0,
                   ),
                   label: Text('')),
-              title:
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: weatherIcon == ''
-                    ? [Text("")]
-                    : [
-                  Image.network(
-                    'http://openweathermap.org/img/wn/$weatherIcon@2x.png',
-                    fit: BoxFit.contain,
-                    height: 32,
-                  ),
-                  InkWell(
-                    child: Container(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          weatherToday,
-                          style: new TextStyle(fontSize: 17.64),
-                        )),
-                    onTap: () {
-                      showDialogWeather(context);
-                    },
-                  ),
-                ],
-              ),
+              title: Text('Title')
             ),
             body: SingleChildScrollView(
               child: Column(
@@ -314,7 +287,6 @@ class _ViewerPageState extends State<ViewerPage> {
     final allRowsFav = await db.queryAllRowsFav();
     dbMap = allRows;
     dbMapFav = allRowsFav;
-    //finds the catagories and adds to catList
     catList.clear();
     allRows.forEach((row) {
       if (!catList.toString().contains('${row['cat']}')) {
@@ -322,7 +294,6 @@ class _ViewerPageState extends State<ViewerPage> {
       }
     });
     chipCat.clear();
-    //create choice chips
     for (int i = 0; i < catList.length; i++) {
       chipCat.add(
         ChoiceChip(
@@ -361,18 +332,6 @@ class _ViewerPageState extends State<ViewerPage> {
             style: TextStyle(fontSize: 10, color: Colors.black),
           )));
     }
-
-    //loadWeatherToday();
-    Weather weather = (await weatherStation.currentWeather());
-    if ('${weather.weatherMain}' != null &&
-        '${weather.tempMin.celsius.round()}' != null &&
-        '${weather.tempMax.celsius.round()}' != null) {
-      weatherToday =
-      '${weather.weatherMain} ${weather.tempMin.celsius.round()}°C/${weather.tempMax.celsius.round()}°C';
-      if ('${weather.weatherIcon}' != null) {
-        weatherIcon = weather.weatherIcon;
-      }
-    }
   }
 
   _showDialog(BuildContext context, String title, String hint) {
@@ -399,18 +358,18 @@ class _ViewerPageState extends State<ViewerPage> {
   }
 
   void _insert(itemID, itemName, fav) async {
-    // row to insert
     Map<String, dynamic> row = {
       DatabaseHelper.columnId: '$itemID',
       DatabaseHelper.columnFavName: '$itemName',
       DatabaseHelper.columnFav: '$fav',
     };
-    //final id =
     await db.insertFav(row);
+
     Fluttertoast.showToast(
       msg: 'Item $itemName Added To $fav',
       toastLength: Toast.LENGTH_SHORT,
     );
+
     setState(() {
       _btnSelectedValFav = null;
     });
