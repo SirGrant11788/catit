@@ -1,10 +1,12 @@
 import 'dart:io';
+import 'package:cat_it/logic/globalDbSelect.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:cat_it/services/db.dart';
 import 'package:cat_it/ui/uiAddItem.dart';
 import 'package:cat_it/ui/uiEditProduct.dart';
 import 'package:cat_it/ui/uiViewer.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -28,7 +30,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final db = DatabaseHelper.instance;
+  var database;
+
   var dbMap;
   var dbMapFav;
   String leading1, leading2;
@@ -36,6 +39,21 @@ class _MyHomePageState extends State<MyHomePage> {
   List<String> columnList = List();
   List<Tab> catTabList = List<Tab>();
   List<Widget> contTabList = List<Widget>();
+
+  void initState() {
+    super.initState();
+    callDb();
+    _query();
+  }
+
+  callDb() async{
+    DatabaseHelper databaseHelper = DatabaseHelper();
+
+    var _database = await databaseHelper.database;
+    setState(() {
+      database = _database;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +71,27 @@ class _MyHomePageState extends State<MyHomePage> {
             length: catTabList.length == 0 ? _kTabs.length : catTabList.length,
             child: Scaffold(
               appBar: AppBar(
-                title: Text('Title')
+                title: Text('Title'),
+                actions: [
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      return value == 'catalogue'
+                        ? _showCataloguesDialog(context)
+                        : null;
+                    }, //TODO settings page
+                    itemBuilder: (BuildContext context) {
+                      return <PopupMenuEntry<String>>[
+                      const PopupMenuItem<String>(
+                        child: Text('Catalogue'),
+                        value: 'catalogue',
+                      ),
+                      const PopupMenuItem<String>(
+                        child: Text('Info'),
+                      ),
+                    ];
+                    },
+                  ),
+                ]
               ),
               body: new ListView(
                 children: <Widget>[
@@ -219,11 +257,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   _query() async {
-    final allRows = await db.queryAllRows();
-    final allRowsFav = await db.queryAllRowsFav();
+    final allRows = await database.queryAllRows();
+    final allRowsFav = await database.queryAllRowsFav();
 
     columnList.clear();
-    final allColumns = await db.queryColumns();
+    final allColumns = await database.queryColumns();
     allColumns.forEach((column) {
       columnList.add('${column['name']}');
     });
@@ -285,4 +323,40 @@ class _MyHomePageState extends State<MyHomePage> {
       );
     }
   }
-}
+
+  _showCataloguesDialog(BuildContext context)  {
+    GlobalDbSelect dbSelect = GlobalDbSelect();
+    List <String> dbs = [];
+    dbs = getdbs();
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+      return FutureBuilder(
+          future: getdbs(),
+          builder: (context, snapshot) {
+        return ListView.builder(
+        shrinkWrap: true,
+        itemCount: dbs.length,
+        itemBuilder: (BuildContext context, int i)
+        {
+        return GestureDetector(
+        child: Text(dbs[i]),
+        onTap: () {
+        dbSelect.dbNumber = i;
+        },
+        );
+
+        });
+        });
+      });
+    }
+
+    getdbs() async {
+      final localCache = await SharedPreferences.getInstance();
+    return (localCache.getStringList('databases'));
+    }
+
+  }
+
+
+

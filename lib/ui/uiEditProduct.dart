@@ -15,8 +15,22 @@ class EditProductPage extends StatefulWidget {
 }
 
 class _EditProductPageState extends State<EditProductPage> {
-  final db = DatabaseHelper.instance;
+  var database;
   String temp;
+
+  void initState() async {
+    super.initState();
+    callDb();
+
+  }
+  callDb() async {
+    DatabaseHelper databaseHelper = DatabaseHelper();
+
+    var _database = await databaseHelper.database;
+    setState(() {
+      database = _database;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -117,8 +131,8 @@ class _EditProductPageState extends State<EditProductPage> {
   deleteItem(id,name) async {
     print('$id $name');
 
-    await db.delete(int.parse(id));
-    await db.deleteFavName('$name');
+    await database.delete(int.parse(id));
+    await database.deleteFavName('$name');
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => MyApp()),
@@ -126,15 +140,15 @@ class _EditProductPageState extends State<EditProductPage> {
   }
 
   updateItem(id,col,name) async {
-    await db.updateItemQuery(id,col,name);
+    await database.updateItemQuery(id,col,name);
     if('$col'== 'name'){
-      await db.updateQueryFavName(id,name);
+      await database.updateQueryFavName(id,name);
     }
   }
 
   Future _pickImageFromCamera(id,col) async {
     File image = await ImagePicker.pickImage(source: ImageSource.camera);
-    await db.updateItemQuery(id,col,'${image.uri}');
+    await database.updateItemQuery(id,col,'${image.uri}');
     print('$col:${image.uri} UPDATED');
   }
 }

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:cat_it/services/db.dart';
 import 'package:cat_it/ui/uiAppHome.dart';
-import 'package:weather/weather.dart';
 
 class ViewerPage extends StatefulWidget {
   @override
@@ -13,7 +12,7 @@ class ViewerPage extends StatefulWidget {
 }
 
 class _ViewerPageState extends State<ViewerPage> {
-  final db = DatabaseHelper.instance;
+  var database;
   TextEditingController _textFieldControllerDialog = TextEditingController();
   List<DropdownMenuItem<String>> favList = List();
   String _btnSelectedValFav;
@@ -26,6 +25,21 @@ class _ViewerPageState extends State<ViewerPage> {
 
   String weatherToday = "MyThreads";
   String weatherIcon = '';
+
+  void initState() async {
+    super.initState();
+    callDb();
+    _query();
+
+  }
+  callDb() async {
+    DatabaseHelper databaseHelper = DatabaseHelper();
+
+    var _database = await databaseHelper.database;
+    setState(() {
+      database = _database;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -187,32 +201,33 @@ class _ViewerPageState extends State<ViewerPage> {
                                                                         favList.add(DropdownMenuItem<String>(value: '$val', child: Text('$val')));
                                                                       });
                                                                     } else {
-                                                                      setState(() {
-                                                                        _btnSelectedValFav = newValue;
-                                                                      });
+                                                                      // setState(() {
+                                                                      //   _btnSelectedValFav = newValue;
+                                                                      // });
+                                                                      _showConfirmFavDialog(context,dbMap[ind]['name'].toString(),newValue,ind);
                                                                     }
                                                                   }),
                                                                   items: favList,
                                                                 ),
                                                               ),
-                                                              _btnSelectedValFav != null
-                                                                  ? Container(
-                                                                  height: (MediaQuery.of(context).size.width / 28) / 1,
-                                                                  width: (MediaQuery.of(context).size.width / 1.019) / 4.19,
-                                                                  child: RaisedButton(
-                                                                    color: Colors.blue[200],
-                                                                    child: Text(
-                                                                      'SAVE',
-                                                                      style: TextStyle(fontSize: 8),
-                                                                    ),
-                                                                    onPressed: () {
-                                                                      _insert('$ind', '${dbMap[ind]['name'].toString()}', _btnSelectedValFav);
-                                                                    },
-                                                                  ))
-                                                                  : Container(
-                                                                height: (MediaQuery.of(context).size.width / 28) / 1,
-                                                                width: (MediaQuery.of(context).size.width / 1.019) / 4.19,
-                                                              ),
+                                                              // _btnSelectedValFav != null
+                                                              //     ? Container(
+                                                              //     height: (MediaQuery.of(context).size.width / 28) / 1,
+                                                              //     width: (MediaQuery.of(context).size.width / 1.019) / 4.19,
+                                                              //     child: RaisedButton(
+                                                              //       color: Colors.blue[200],
+                                                              //       child: Text(
+                                                              //         'SAVE',
+                                                              //         style: TextStyle(fontSize: 8),
+                                                              //       ),
+                                                              //       onPressed: () {
+                                                              //         _insert('$ind', '${dbMap[ind]['name'].toString()}', _btnSelectedValFav);
+                                                              //       },
+                                                              //     ))
+                                                              //     : Container(
+                                                              //   height: (MediaQuery.of(context).size.width / 28) / 1,
+                                                              //   width: (MediaQuery.of(context).size.width / 1.019) / 4.19,
+                                                              // ),
                                                               Container(
                                                                 width:
                                                                 (MediaQuery.of(context).size.width / 1.019) / 3,
@@ -278,13 +293,13 @@ class _ViewerPageState extends State<ViewerPage> {
   }
 
   _delFav(favId) async {
-    await db.deleteFav(favId);
+    await database.deleteFav(favId);
     setState(() {});
   }
 
   _query() async {
-    final allRows = await db.queryAllRows();
-    final allRowsFav = await db.queryAllRowsFav();
+    final allRows = await database.queryAllRows();
+    final allRowsFav = await database.queryAllRowsFav();
     dbMap = allRows;
     dbMapFav = allRowsFav;
     catList.clear();
@@ -357,13 +372,46 @@ class _ViewerPageState extends State<ViewerPage> {
         });
   }
 
+  _showConfirmFavDialog(BuildContext context, String item, String fav, int index) {
+
+    // set up the buttons
+    Widget cancelButton = FlatButton(
+      child: Text("Cancel"),
+      onPressed:  () {},
+    );
+    Widget continueButton = FlatButton(
+      child: Text("Save"),
+      onPressed:  () {
+        _insert('$index', '$item', fav);
+      },
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("$fav"),
+      content: Text("Would you like to save $item to $fav?"),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
   void _insert(itemID, itemName, fav) async {
     Map<String, dynamic> row = {
       DatabaseHelper.columnId: '$itemID',
       DatabaseHelper.columnFavName: '$itemName',
       DatabaseHelper.columnFav: '$fav',
     };
-    await db.insertFav(row);
+    await database.insertFav(row);
 
     Fluttertoast.showToast(
       msg: 'Item $itemName Added To $fav',

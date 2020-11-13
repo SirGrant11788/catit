@@ -11,7 +11,7 @@ class AddItemPage extends StatefulWidget {
 }
 
 class _AddItemPageState extends State<AddItemPage> {
-  final db = DatabaseHelper.instance;
+  var database;
   List<String> columnList = List();
   List<String> columnListNew = List();
   List<TextEditingController> _controllers = new List();
@@ -23,13 +23,19 @@ class _AddItemPageState extends State<AddItemPage> {
   String _btnSelectedValCat;
   String temp;
 
-  void initState() {
+  void initState() async {
     super.initState();
-    _textFieldControllerName.text = null;
-    _textFieldControllerDesc.text = null;
-    _btnSelectedValCat = null;
-    _textFieldControllerDialogCol = null;
-    _textFieldControllerDialog = null;
+    callDb();
+    _query();
+
+  }
+  callDb() async {
+    DatabaseHelper databaseHelper = DatabaseHelper();
+
+    var _database = await databaseHelper.database;
+    setState(() {
+      database = _database;
+    });
   }
 
   void dispose() {
@@ -233,14 +239,14 @@ class _AddItemPageState extends State<AddItemPage> {
 
   _query() async {
     columnList.clear();
-    final allColumns = await db.queryColumns();
+    final allColumns = await database.queryColumns();
     allColumns.forEach((column) {
       columnList.add('${column['name']}');
     });
 
     List<String> tempCatList = List();
     if (catList.length == 0) {
-      final allRows = await db.queryAllRows();
+      final allRows = await database.queryAllRows();
       allRows.forEach((row) {
         for (int i = 0; i < catList.length; i++) {
           tempCatList.add('${catList[i].value}');
@@ -276,13 +282,13 @@ class _AddItemPageState extends State<AddItemPage> {
       DatabaseHelper.columnDesc: '$_textFieldControllerDesc',
       DatabaseHelper.columnPic: '$_cameraImage',
     };
-    final id = await db.insert(row);
+    final id = await database.insert(row);
 
     print('inserted row id: $id name: $_textFieldControllerName cat: $_btnSelectedValCat desc: $_textFieldControllerDesc pic: $_cameraImage');
 
     if (columnListNew.length != 0 || columnListNew.length != null) {
       for (int i = 0; i < columnListNew.length; i++) {
-        await db.insertColumn(columnListNew[i].toString());
+        await database.insertColumn(columnListNew[i].toString());
       }
     }
 
@@ -295,7 +301,7 @@ class _AddItemPageState extends State<AddItemPage> {
             columnList[i] != 'pic' &&
             _controllers[i].text != '' &&
             _controllers[i].text != null) {
-          await db.insertQuery(
+          await database.insertQuery(
               columnList[i].toString(),
               _controllers[i].text.toString(),
               '$_textFieldControllerName'); //note change from name to id
