@@ -11,328 +11,309 @@ class AddItemPage extends StatefulWidget {
 }
 
 class _AddItemPageState extends State<AddItemPage> {
-  var database;
-  List<String> columnList = List();
-  List<String> columnListNew = List();
-  List<TextEditingController> _controllers = new List();
-  TextEditingController _textFieldControllerDialog = TextEditingController();
-  TextEditingController _textFieldControllerDialogCol = TextEditingController();
-  TextEditingController _textFieldControllerName = TextEditingController();
-  TextEditingController _textFieldControllerDesc = TextEditingController();
-  File _cameraImage;
-  String _btnSelectedValCat;
-  String temp;
+  final db = DatabaseHelper.instance;
+  List<String> attributes = [];
+  List<String> attributesNew = [];
 
-  void initState() async {
-    super.initState();
-    callDb();
-    _query();
+  List<TextEditingController> attributeControllers = [];
+  TextEditingController newCategoryNameTextController = TextEditingController();
+  TextEditingController newAttributeTextController = TextEditingController();
+  TextEditingController itemNameTextController = TextEditingController();
+  TextEditingController descriptionTextController = TextEditingController();
 
-  }
-  callDb() async {
-    DatabaseHelper databaseHelper = DatabaseHelper();
+  List<DropdownMenuItem<String>> categories = [];
+  String selectedCategory;
 
-    var _database = await databaseHelper.database;
-    setState(() {
-      database = _database;
-    });
-  }
+  File itemImage;
+  final imagePicker = ImagePicker();
 
   void dispose() {
-    _textFieldControllerDialog.dispose();
-    _textFieldControllerDialogCol.dispose();
-    _textFieldControllerName.dispose();
-    _textFieldControllerDesc.dispose();
+    newCategoryNameTextController.dispose();
+    newAttributeTextController.dispose();
+    itemNameTextController.dispose();
+    descriptionTextController.dispose();
+    attributeControllers.forEach((controller) => controller.dispose());
     super.dispose();
   }
 
-  List<DropdownMenuItem<String>> catList = List();
+  void initState() {
+    getAttributesAndCategories();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: _query(),
-        builder: (context, snapshot) {
-          return Scaffold(
+    return Scaffold(
               resizeToAvoidBottomInset: true,
               appBar: AppBar(
                 title: Text('Add Item'),
               ),
               body: SingleChildScrollView(
                 child: Column(children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: new RawMaterialButton(
-                      onPressed: () {
-                        _pickImageFromCamera();
-                      }, //add pic
-                      child: _cameraImage == null
-                          ? new Icon(
-                        Icons.camera_enhance,
-                        color: Colors.blue,
-                        size: 35.0,
-                      )
-                          : new Icon(
-                        Icons.camera_alt,
-                        color: Colors.red,
-                        size: 35.0,
-                      ),
-                      shape: new CircleBorder(),
-                      elevation: 2.0,
-                      fillColor: Colors.white,
-                      padding: const EdgeInsets.all(15.0),
-                    ),
-                  ),
-
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: TextFormField(
-                      controller: _textFieldControllerName,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Item Name',
-                        labelText: 'Item Name',
-                      ),
-                      maxLines: 1,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: TextFormField(
-                      controller: _textFieldControllerDesc,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Description',
-                        labelText: 'Description',
-                      ),
-                      maxLines: 3,
-                    ),
-                  ),
-                  Divider(
-                    thickness: 2.0,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: ListTile(
-                      title: Text('Select Category:'),
-                      trailing: DropdownButton(
-                        value: _btnSelectedValCat,
-                        hint: Text(
-                          'Category',
-                          textAlign: TextAlign.center,
-                        ),
-                        onChanged: ((String newValue) {
-                          if (newValue == 'Add New Category') {
-                            _showDialog(context, 'Category', 'e.g. Pants')
-                                .then((val) {
-                              catList.add(DropdownMenuItem<String>(
-                                  value: '$val', child: Text('$val')));
-                            });
-                          } else {
-                            setState(() {
-                              _btnSelectedValCat = newValue;
-                            });
-                          }
-                        }),
-                        items: catList,
-                      ),
-                    ),
-                  ),
-                  Divider(
-                    thickness: 2.0,
-                  ),
-                  //adding col
-                  Row(children: <Widget>[
-                    Expanded(
-                      child: new Container(
-                          margin: const EdgeInsets.only(left: 10.0, right: 5.0),
-                          child: Divider(
-                            color: Colors.black,
-                            height: 36,
-                          )),
-                    ),
-                    FlatButton(
-                      onPressed: () {
-                        _showDialogCol(context).then((val) {
-                          columnList.add('$val');
-                          columnListNew.add('$val');
-                        });
-                      },
-                      child: Text(
-                        "ADD ANOTHER ATTRIBUTE",
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
-                    ),
-                    Expanded(
-                      child: new Container(
-                          margin: const EdgeInsets.only(left: 5.0, right: 10.0),
-                          child: Divider(
-                            color: Colors.black,
-                            height: 36,
-                          )),
-                    ),
-                  ]),
-                  Container(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height / 3.7,
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: columnList.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        _controllers.add(new TextEditingController());
-                        return columnList[index] != '_id' &&
-                            columnList[index] != 'pic' &&
-                            columnList[index] != 'desc' &&
-                            columnList[index] != 'cat' &&
-                            columnList[index] != 'name'
-                            ? TextFormField(
-                          controller: _controllers[index],
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: '${columnList[index]}',
-                            labelText: '${columnList[index]}',
-                          ),
-                          maxLines: 1,
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: RawMaterialButton(
+                        onPressed: getImage,
+                        child: itemImage == null
+                            ? Icon(
+                          Icons.camera_enhance,
+                          color: Colors.blue,
+                          size: 35.0,
                         )
-                            : Container();
-                      },
-                    ),
-                  ),
-
-                  ButtonBar(
-                    alignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      RaisedButton(
-                        child: Text('SAVE'),
-                        color: Colors.blue,
-                        highlightColor: Colors.grey,
-                        shape: new RoundedRectangleBorder(
-                          borderRadius: new BorderRadius.circular(30.0),
+                            : Icon(
+                          Icons.camera_alt,
+                          color: Colors.red,
+                          size: 35.0,
                         ),
+                        shape: CircleBorder(),
+                        elevation: 2.0,
+                        fillColor: Colors.white,
+                        padding: const EdgeInsets.all(15.0),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextFormField(
+                        controller: itemNameTextController,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: 'Item Name',
+                          labelText: 'Item Name',
+                        ),
+                        maxLines: 1,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextFormField(
+                        controller: descriptionTextController,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: 'Description',
+                          labelText: 'Description',
+                        ),
+                        maxLines: 3,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: ListTile(
+                        title: Text('Select Category:'),
+                        trailing: DropdownButton(
+                          value: selectedCategory,
+                          hint: Text(
+                            'Category',
+                            textAlign: TextAlign.center,
+                          ),
+                          onChanged: ((String newValue) {
+                            if (newValue == 'Add New Category') {
+                              showCategoryNameDialog(context).then((result) {
+                                setState(() {
+                                  categories.add(DropdownMenuItem<String>(value: result, child: Text(result)));
+                                  selectedCategory = result;
+                                });
+                              });
+                            } else {
+                              setState(() {
+                                selectedCategory = newValue;
+                              });
+                            }
+                          }),
+                          items: categories,
+                        ),
+                      ),
+                    ),
+                    Row(children: <Widget>[
+                      Expanded(
+                        child: new Container(
+                            margin: const EdgeInsets.only(left: 10.0, right: 5.0),
+                            child: Divider(
+                              color: Colors.black,
+                              height: 36,
+                            )),
+                      ),
+                      FlatButton(
                         onPressed: () {
-                          if (_textFieldControllerName.text != null &&
-                              _btnSelectedValCat != null &&
-                              _cameraImage != null) {
-                            _insert(
-                                _textFieldControllerName.text,
-                                _btnSelectedValCat,
-                                _textFieldControllerDesc.text,
-                                _cameraImage.uri,
-                                columnListNew,
-                                columnList,
-                                _controllers);
-                          } else {
-                            Fluttertoast.showToast(
-                              msg:
-                              'Please complete Photo, Name and Category fields',
-                              toastLength: Toast.LENGTH_LONG,
-                            );
-                          }
+                          showAttributeDialog(context).then((result) {
+                            setState(() {
+                              attributeControllers.add(new TextEditingController());
+                              attributes.add(result);
+                              attributesNew.add(result);
+                            });
+
+                          });
+                        },
+                        child: Text(
+                          'ADD ANOTHER ATTRIBUTE',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ),
+                      Expanded(
+                        child: new Container(
+                            margin: const EdgeInsets.only(left: 5.0, right: 10.0),
+                            child: Divider(
+                              color: Colors.black,
+                              height: 36,
+                            )),
+                      ),
+                    ]),
+                    Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height / 3.7,
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: attributes.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return attributes[index] != '_id' &&
+                              attributes[index] != 'pic' &&
+                              attributes[index] != 'desc' &&
+                              attributes[index] != 'cat' &&
+                              attributes[index] != 'name'
+                              ? Padding(
+                                padding: const EdgeInsets.only(bottom: 8.0, left: 8.0, right: 8.0),
+                                child: Stack(
+                                  alignment: Alignment.centerRight,
+                                  children: [
+                                    TextFormField(
+                                        controller: attributeControllers[index],
+                                        maxLines: 1,
+                                        decoration: InputDecoration(
+                                          border: OutlineInputBorder(),
+                                          hintText: '${attributes[index]}',
+                                          labelText: '${attributes[index]}',
+                                        )
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.clear),
+                                      onPressed: () { removeAttribute(index); }
+                                    )
+                                  ],
+                                ),
+                              )
+                              : Container();
                         },
                       ),
-                    ],
-                  ),
-                ]),
-              ));
-        });
+                    ),
+                    ButtonBar(
+                      alignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        RaisedButton(
+                          child: Text('SAVE'),
+                          color: Colors.blue,
+                          highlightColor: Colors.grey,
+                          shape: new RoundedRectangleBorder(
+                            borderRadius: new BorderRadius.circular(30.0),
+                          ),
+                          onPressed: () {
+                            if (validateForm()) {
+                              addItem();
+                            } else {
+                              Fluttertoast.showToast(
+                                msg: 'Please complete Photo, Name and Category fields',
+                                toastLength: Toast.LENGTH_LONG,
+                              );
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ]),
+              ),
+              );
   }
 
-  _query() async {
-    columnList.clear();
-    final allColumns = await database.queryColumns();
-    allColumns.forEach((column) {
-      columnList.add('${column['name']}');
-    });
+  void getAttributesAndCategories() async {
+    final allAttributes = await db.queryColumns();
+    final allCategories = await db.queryAllRows();
 
-    List<String> tempCatList = List();
-    if (catList.length == 0) {
-      final allRows = await database.queryAllRows();
-      allRows.forEach((row) {
-        for (int i = 0; i < catList.length; i++) {
-          tempCatList.add('${catList[i].value}');
-        }
-        if (!tempCatList.toString().contains('${row['cat']}')) {
-          catList.add(DropdownMenuItem<String>(
-              value: '${row['cat']}', child: Text('${row['cat']}')));
-        }
-      });
-      catList.add(DropdownMenuItem<String>(
-          value: 'Add New Category', child: Text('Add New Category')));
-    }
-  }
-
-  Future _pickImageFromCamera() async {
-    File image = await ImagePicker.pickImage(source: ImageSource.camera);
     setState(() {
-      _cameraImage = image;
+      allAttributes.forEach((attribute) {
+        attributes.add(attribute['name'].toString());
+        attributeControllers.add(TextEditingController());
+      });
+      categories = allCategories.map((category) => DropdownMenuItem<String>(value: category['cat'], child: Text(category['cat']))).toList();
+      categories.add(DropdownMenuItem<String>(value: 'Add New Category', child: Text('Add New Category')));
     });
   }
 
-  void _insert(
-      _textFieldControllerName,
-      _btnSelectedValCat,
-      _textFieldControllerDesc,
-      _cameraImage,
-      columnListNew,
-      columnList,
-      _controllers) async {
-    Map<String, dynamic> row = {
-      DatabaseHelper.columnName: '$_textFieldControllerName',
-      DatabaseHelper.columnCat: '$_btnSelectedValCat',
-      DatabaseHelper.columnDesc: '$_textFieldControllerDesc',
-      DatabaseHelper.columnPic: '$_cameraImage',
-    };
-    final id = await database.insert(row);
+  void removeAttribute(int index) {
+    setState(() {
+      this.attributes.removeAt(index);
+      this.attributeControllers.removeAt(index);
+    });
+  }
 
-    print('inserted row id: $id name: $_textFieldControllerName cat: $_btnSelectedValCat desc: $_textFieldControllerDesc pic: $_cameraImage');
+  Future getImage() async {
+    final pickedFile = await imagePicker.getImage(source: ImageSource.camera);
 
-    if (columnListNew.length != 0 || columnListNew.length != null) {
-      for (int i = 0; i < columnListNew.length; i++) {
-        await database.insertColumn(columnListNew[i].toString());
+    setState(() {
+      if (pickedFile != null) {
+        itemImage = File(pickedFile.path);
+      }
+    });
+  }
+
+  void addItem() async {
+    final itemName = itemNameTextController.text;
+
+    await db.insert({
+      DatabaseHelper.columnName: itemName,
+      DatabaseHelper.columnCat: selectedCategory,
+      DatabaseHelper.columnDesc: descriptionTextController.text,
+      DatabaseHelper.columnPic: itemImage.uri.toString(),
+    });
+
+    if (attributesNew.length != 0 || attributesNew.length != null) {
+      for (int i = 0; i < attributesNew.length; i++) {
+        await db.insertColumn(attributesNew[i].toString());
       }
     }
 
-    if (columnList.length != 0 || columnList.length != null) {
-      for (int i = 0; i < columnList.length; i++) {
-        if (columnList[i] != '_id' &&
-            columnList[i] != 'name' &&
-            columnList[i] != 'desc' &&
-            columnList[i] != 'cat' &&
-            columnList[i] != 'pic' &&
-            _controllers[i].text != '' &&
-            _controllers[i].text != null) {
-          await database.insertQuery(
-              columnList[i].toString(),
-              _controllers[i].text.toString(),
-              '$_textFieldControllerName'); //note change from name to id
-
+    if (attributes.length != 0 || attributes.length != null) {
+      for (int i = 0; i < attributes.length; i++) {
+        if (attributes[i] != '_id' &&
+            attributes[i] != 'name' &&
+            attributes[i] != 'desc' &&
+            attributes[i] != 'cat' &&
+            attributes[i] != 'pic' &&
+            attributeControllers[i].text != '' &&
+            attributeControllers[i].text != null) {
+          await db.insertQuery(
+              attributes[i].toString(),
+              attributeControllers[i].text.toString(),
+              itemName
+          );
         }
       }
     }
 
     Fluttertoast.showToast(
-      msg: 'Item $_textFieldControllerName Added',
+      msg: 'Item $itemName Added',
       toastLength: Toast.LENGTH_SHORT,
     );
     Navigator.push(context, MaterialPageRoute(builder: (context) => MyApp()));
   }
 
-  _showDialog(BuildContext context, String title, String hint) {
-    _textFieldControllerDialog.text = '';
+  bool validateForm() {
+    return (itemNameTextController.text != null && selectedCategory != null && itemImage != null);
+  }
+
+  showCategoryNameDialog(BuildContext context) {
     return showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('$title'),
+            title: Text('CATEGORY'),
             content: TextField(
-              controller: _textFieldControllerDialog,
-              decoration: InputDecoration(hintText: "$hint"),
+              controller: newCategoryNameTextController,
+              decoration: InputDecoration(hintText: 'e.g. Pants'),
             ),
             actions: <Widget>[
               new FlatButton(
                 child: new Text('SAVE'),
                 onPressed: () {
-                  Navigator.pop(context, _textFieldControllerDialog.text);
+                  Navigator.pop(context, newCategoryNameTextController.text);
+                  newCategoryNameTextController.clear();
                 },
               ),
             ],
@@ -340,22 +321,22 @@ class _AddItemPageState extends State<AddItemPage> {
         });
   }
 
-  _showDialogCol(BuildContext context) {
-    _textFieldControllerDialogCol.text = '';
+  showAttributeDialog(BuildContext context) {
     return showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
             title: Text('ATTRIBUTE'),
             content: TextField(
-              controller: _textFieldControllerDialogCol,
-              decoration: InputDecoration(hintText: "Attribute"),
+              controller: newAttributeTextController,
+              decoration: InputDecoration(hintText: 'Attribute'),
             ),
             actions: <Widget>[
-              new FlatButton(
-                child: new Text('SAVE'),
+              FlatButton(
+                child: Text('SAVE'),
                 onPressed: () {
-                  Navigator.pop(context, _textFieldControllerDialogCol.text);
+                  Navigator.pop(context, newAttributeTextController.text);
+                  newAttributeTextController.clear();
                 },
               ),
             ],
