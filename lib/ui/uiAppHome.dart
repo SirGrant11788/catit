@@ -3,8 +3,8 @@ import 'package:cat_it/logic/globalDbSelect.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:cat_it/services/db.dart';
-import 'package:cat_it/ui/uiAddItem.dart';
-import 'package:cat_it/ui/uiEditProduct.dart';
+import 'package:cat_it/ui/itemCreatePage.dart';
+import 'package:cat_it/ui/itemDetailsPage.dart';
 import 'package:cat_it/ui/uiViewer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
