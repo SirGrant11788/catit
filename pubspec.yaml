@@ -30,6 +30,7 @@ dependencies:
   path_provider: ^1.6.0
   intl: ^0.16.0
   qr_flutter: ^3.2.0
+  shared_preferences: ^0.5.8
 
 
   # The following adds the Cupertino Icons font to your application.
