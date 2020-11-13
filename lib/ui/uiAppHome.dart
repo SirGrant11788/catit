@@ -30,7 +30,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var database;
+  DatabaseHelper database = DatabaseHelper();
+  List<String> dbs;
 
   var dbMap;
   var dbMapFav;
@@ -41,18 +42,9 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Widget> contTabList = List<Widget>();
 
   void initState() {
-    super.initState();
-    callDb();
     _query();
-  }
-
-  callDb() async{
-    DatabaseHelper databaseHelper = DatabaseHelper();
-
-    var _database = await databaseHelper.database;
-    setState(() {
-      database = _database;
-    });
+    getDbs();
+    super.initState();
   }
 
   @override
@@ -324,38 +316,38 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  _showCataloguesDialog(BuildContext context)  {
+  _showCataloguesDialog(BuildContext context)  async {
     GlobalDbSelect dbSelect = GlobalDbSelect();
-    List <String> dbs = [];
-    dbs = getdbs();
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-      return FutureBuilder(
-          future: getdbs(),
-          builder: (context, snapshot) {
-        return ListView.builder(
-        shrinkWrap: true,
-        itemCount: dbs.length,
-        itemBuilder: (BuildContext context, int i)
-        {
-        return GestureDetector(
-        child: Text(dbs[i]),
-        onTap: () {
-        dbSelect.dbNumber = i;
-        },
-        );
-
-        });
-        });
-      });
+              return showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('Catalogue'),
+                  content: Container(
+                    width: double.minPositive,
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: dbs.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return ListTile(
+                          title: Text(dbs[index].toString()),
+                          onTap: () {
+                              dbSelect.dbNo = index;
+                              Navigator.push(context,
+                                  MaterialPageRoute(builder: (context) => MyApp()));
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                );
+              });
     }
 
-    getdbs() async {
+    void getDbs() async {
       final localCache = await SharedPreferences.getInstance();
-    return (localCache.getStringList('databases'));
+       dbs = localCache.getStringList('databases');
     }
-
   }
 
 

@@ -1,14 +1,19 @@
-GlobalDbSelect _globalDbSelect;
-
 class GlobalDbSelect {
-   int dbNumber;
+  int dbNumber = 0;
 
-  int get dbNo{
-   return dbNumber;
- }
+  static final GlobalDbSelect _instance = GlobalDbSelect._internal();
 
-   void set dbNo(int dbNum){
-   dbNumber = dbNum;
- }
-   GlobalDbSelect({this.dbNumber});
+  factory GlobalDbSelect() {
+    return _instance;
+  }
+
+  GlobalDbSelect._internal();
+
+  int get dbNo {
+    return dbNumber;
+  }
+
+  void set dbNo(int dbNum) {
+    dbNumber = dbNum;
+  }
 }

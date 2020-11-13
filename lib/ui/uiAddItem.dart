@@ -11,9 +11,20 @@ class AddItemPage extends StatefulWidget {
 }
 
 class _AddItemPageState extends State<AddItemPage> {
-  final db = DatabaseHelper.instance;
+  DatabaseHelper database = DatabaseHelper();
   List<String> attributes = [];
   List<String> attributesNew = [];
+
+  List<String> columnList = List();
+  List<String> columnListNew = List();
+  List<TextEditingController> _controllers = new List();
+  TextEditingController _textFieldControllerDialog = TextEditingController();
+  TextEditingController _textFieldControllerDialogCol = TextEditingController();
+  TextEditingController _textFieldControllerName = TextEditingController();
+  TextEditingController _textFieldControllerDesc = TextEditingController();
+  File _cameraImage;
+  String _btnSelectedValCat;
+  String temp;
 
   List<TextEditingController> attributeControllers = [];
   TextEditingController newCategoryNameTextController = TextEditingController();
@@ -223,8 +234,8 @@ class _AddItemPageState extends State<AddItemPage> {
   }
 
   void getAttributesAndCategories() async {
-    final allAttributes = await db.queryColumns();
-    final allCategories = await db.queryAllRows();
+    final allAttributes = await database.queryColumns();
+    final allCategories = await database.queryAllRows();
 
     setState(() {
       allAttributes.forEach((attribute) {
@@ -256,7 +267,7 @@ class _AddItemPageState extends State<AddItemPage> {
   void addItem() async {
     final itemName = itemNameTextController.text;
 
-    await db.insert({
+    await database.insert({
       DatabaseHelper.columnName: itemName,
       DatabaseHelper.columnCat: selectedCategory,
       DatabaseHelper.columnDesc: descriptionTextController.text,
@@ -265,7 +276,7 @@ class _AddItemPageState extends State<AddItemPage> {
 
     if (attributesNew.length != 0 || attributesNew.length != null) {
       for (int i = 0; i < attributesNew.length; i++) {
-        await db.insertColumn(attributesNew[i].toString());
+        await database.insertColumn(attributesNew[i].toString());
       }
     }
 
@@ -278,7 +289,7 @@ class _AddItemPageState extends State<AddItemPage> {
             attributes[i] != 'pic' &&
             attributeControllers[i].text != '' &&
             attributeControllers[i].text != null) {
-          await db.insertQuery(
+          await database.insertQuery(
               attributes[i].toString(),
               attributeControllers[i].text.toString(),
               itemName

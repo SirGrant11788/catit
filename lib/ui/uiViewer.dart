@@ -12,7 +12,7 @@ class ViewerPage extends StatefulWidget {
 }
 
 class _ViewerPageState extends State<ViewerPage> {
-  var database;
+  DatabaseHelper database = DatabaseHelper();
   TextEditingController _textFieldControllerDialog = TextEditingController();
   List<DropdownMenuItem<String>> favList = List();
   String _btnSelectedValFav;
@@ -26,19 +26,14 @@ class _ViewerPageState extends State<ViewerPage> {
   String weatherToday = "MyThreads";
   String weatherIcon = '';
 
-  void initState() async {
+  void initState() {
     super.initState();
     callDb();
     _query();
 
   }
   callDb() async {
-    DatabaseHelper databaseHelper = DatabaseHelper();
-
-    var _database = await databaseHelper.database;
-    setState(() {
-      database = _database;
-    });
+    database = DatabaseHelper();
   }
 
   @override

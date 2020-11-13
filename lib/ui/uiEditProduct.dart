@@ -15,21 +15,16 @@ class EditProductPage extends StatefulWidget {
 }
 
 class _EditProductPageState extends State<EditProductPage> {
-  var database;
+  DatabaseHelper database = DatabaseHelper();
   String temp;
 
-  void initState() async {
+  void initState() {
     super.initState();
     callDb();
 
   }
   callDb() async {
-    DatabaseHelper databaseHelper = DatabaseHelper();
-
-    var _database = await databaseHelper.database;
-    setState(() {
-      database = _database;
-    });
+    database = DatabaseHelper();
   }
 
   @override
