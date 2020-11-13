@@ -260,7 +260,7 @@ class _AddItemPageState extends State<AddItemPage> {
       DatabaseHelper.columnName: itemName,
       DatabaseHelper.columnCat: selectedCategory,
       DatabaseHelper.columnDesc: descriptionTextController.text,
-      DatabaseHelper.columnPic: itemImage.uri,
+      DatabaseHelper.columnPic: itemImage.uri.toString(),
     });
 
     if (attributesNew.length != 0 || attributesNew.length != null) {
