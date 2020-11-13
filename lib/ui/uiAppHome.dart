@@ -1,42 +1,25 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:cat_it/services/db.dart';
-import 'package:cat_it/services/weatherDialog.dart';
 import 'package:cat_it/ui/uiAddItem.dart';
 import 'package:cat_it/ui/uiEditProduct.dart';
 import 'package:cat_it/ui/uiViewer.dart';
-import 'package:weather/weather.dart';
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'MyThreads',//TODO chnage name to CatIt ?
-      theme: ThemeData(
-        // This is the theme of your application.
-
-        primarySwatch: Colors.blue,
-      ),
-      home: MyHomePage(title: 'MyThreads'),
+      title: 'CatIt',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: MyHomePage(title: 'CatIt'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
 
   final String title;
 
@@ -49,19 +32,15 @@ class _MyHomePageState extends State<MyHomePage> {
   var dbMap;
   var dbMapFav;
   String leading1, leading2;
-  List<String> favList = List(); //diplsay fav 'cat' horizontal
-  List<String> columnList = List(); //list of columns in the database
+  List<String> favList = List();
+  List<String> columnList = List();
   List<Tab> catTabList = List<Tab>();
   List<Widget> contTabList = List<Widget>();
-  String weatherToday = "MyThreads";
-  String weatherIcon = '';
-  WeatherStation weatherStation =
-  new WeatherStation("996cc4f3b136aea607960591dd64e7a5");
 
   @override
   Widget build(BuildContext context) {
     final _kTabPages = <Tab>[
-      Tab(text: 'Welcome\nadd an item to begin'), //TODO proper intro
+      Tab(text: 'Welcome\nadd an item to begin'),
     ];
     final _kTabs = <Tab>[
       Tab(text: 'WELCOME'),
@@ -74,74 +53,7 @@ class _MyHomePageState extends State<MyHomePage> {
             length: catTabList.length == 0 ? _kTabs.length : catTabList.length,
             child: Scaffold(
               appBar: AppBar(
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: weatherIcon == ''
-                      ? [Text("")]
-                      : [
-                    Image.network(
-                      'http://openweathermap.org/img/wn/$weatherIcon@2x.png',
-                      fit: BoxFit.contain,
-                      height: 32,
-                    ),
-                    InkWell(
-                      child: Container(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            weatherToday,
-                            style: new TextStyle(fontSize: 17.64),
-                          )),
-                      onTap: () {
-                        showDialogWeather(context);
-                      },
-                    ),
-                  ],
-                ),
-                leading: PopupMenuButton<String>(
-                  onSelected: (value) => value == 'Settings'
-                      ? _delTables()
-                      : null, //TODO settings page
-
-                  itemBuilder: (BuildContext context) =>
-                  <PopupMenuEntry<String>>[
-                    // const PopupMenuItem<String>(
-                    //   child: Text('Shop'),
-                    //   value: 'Shop',
-                    // ),
-                    // const PopupMenuItem<String>(
-                    //   child: Text('Backup'),
-                    //   value: 'Backup',
-                    // ),
-                    const PopupMenuItem<String>(
-                      child: Text('Settings'),
-                      value: 'Settings',
-                    ),
-                    const PopupMenuItem<String>(
-                      child: Text('Info'),
-                    ),
-                  ],
-                ),
-                actions: <Widget>[
-                  IconButton(
-                    icon: Icon(Icons.search),
-                    onPressed: () {
-                      Fluttertoast.showToast(
-                        msg: 'search pressed',
-                        toastLength: Toast.LENGTH_LONG,
-                      );
-                    },
-                  ),
-                  //TODO Website login
-                  // IconButton(
-                  //   icon: Icon(Icons.account_circle),
-                  //   onPressed: () {
-                  //     Fluttertoast.showToast(
-                  //       msg: 'account pressed',
-                  //       toastLength: Toast.LENGTH_LONG,
-                  //     );
-                  //   },
-                  // ),
-                ],
+                title: Text('Title')
               ),
               body: new ListView(
                 children: <Widget>[
@@ -246,7 +158,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     height: favList.length != 0
                         ? MediaQuery.of(context).size.height / 2.08
                         : MediaQuery.of(context).size.height /
-                        1, // DYNAMIC sizing
+                        1,
                     child: TabBarView(
                       children:
                       catTabList.length == 0 ? _kTabPages : contTabList,
@@ -306,14 +218,6 @@ class _MyHomePageState extends State<MyHomePage> {
         });
   }
 
-  _delTables() async {
-    print('_delTables executed');
-    // await db.deleteAllTablePack();
-    //  await db.deleteAllTableFav();
-    //  await db.deleteAllTable();
-    // await db.deleteAllTableFavRows();
-  }
-
   _query() async {
     final allRows = await db.queryAllRows();
     final allRowsFav = await db.queryAllRowsFav();
@@ -321,12 +225,10 @@ class _MyHomePageState extends State<MyHomePage> {
     columnList.clear();
     final allColumns = await db.queryColumns();
     allColumns.forEach((column) {
-      // print('${column['name']}');
       columnList.add('${column['name']}');
     });
     if(columnList.length >=4){
       leading1 = columnList[4];
-      //leading2 = columnList[5];
     }
     catTabList.clear();
     allRows.forEach((row) {
@@ -346,24 +248,11 @@ class _MyHomePageState extends State<MyHomePage> {
     dbMapFav = allRowsFav;
 
     loadList();
-
-    Weather weather = (await weatherStation.currentWeather());
-    if ('${weather.weatherMain}' != null &&
-        '${weather.tempMin.celsius.round()}' != null &&
-        '${weather.tempMax.celsius.round()}' != null) {
-      weatherToday =
-      '${weather.weatherMain} ${weather.tempMin.celsius.round()}°C/${weather.tempMax.celsius.round()}°C';
-      if ('${weather.weatherIcon}' != null) {
-        weatherIcon = weather.weatherIcon;
-      }
-    }
   }
 
-  //loads the items into the correct tabs
   loadList() {
     contTabList.clear();
     for (int i = 0; i < catTabList.length; i++) {
-      //run for number of available tabs
       contTabList.add(
         ListView.builder(
           itemCount: dbMap.length,
@@ -380,7 +269,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 subtitle: columnList[4] != null
                     ? Text('${dbMap[index]['$leading1']}')
                     : Text(''),
-                // trailing: Icon(Icons.arrow_right),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -397,24 +285,4 @@ class _MyHomePageState extends State<MyHomePage> {
       );
     }
   }
-
-// _delItem(id, name) async {
-//   await db.deleteFavName('$name');
-//   await db.delete(id);
-//   Navigator.push(
-//     context,
-//     MaterialPageRoute(builder: (context) => MyApp()),
-//   );
-// }
-
-// _updateItem(id, name, cat, size, fit, weather, rating, desc, pic) async {
-//   await db.updateQuery(id, name, cat, size, fit, weather, rating, desc, pic);
-//   await db.updateQueryFavName(id, name);
-
-//   print('item updated');
-//   Navigator.push(
-//     context,
-//     MaterialPageRoute(builder: (context) => MyApp()),
-//   );
-// }
 }
