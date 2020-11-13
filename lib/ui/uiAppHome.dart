@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:cat_it/services/db.dart';
 import 'package:cat_it/ui/uiAddItem.dart';
-import 'package:cat_it/ui/uiEditProduct.dart';
+import 'package:cat_it/ui/itemDetailsPage.dart';
 import 'package:cat_it/ui/uiViewer.dart';
 
 class MyApp extends StatelessWidget {
