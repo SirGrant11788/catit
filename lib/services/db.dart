@@ -4,12 +4,11 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
-  static final _databaseName = "MyDatabase.db";
+  static final _databaseName = "MyDatabase.db";//use loacal preff to store multiple names for dbs
   static final _databaseVersion = 1;
 
   static final table = 'my_table';//main table
   static final tableFav = 'fav_table';//fav table
-  static final tablePack = 'pack_table';//pack table
 
   //main table
   static final columnId = '_id';
@@ -22,10 +21,6 @@ class DatabaseHelper {
   static final columnIdFav = '_id_fav';
   static final columnFav = 'fav';
   static final columnFavName = 'fav_name';
-  //pack table
-  static final columnIdPack = '_id_pack';
-  static final columnPack = 'pack';
-  static final columnPackName = 'pack_name';
 
   // make this a singleton class
   DatabaseHelper._privateConstructor();
@@ -69,17 +64,7 @@ CREATE TABLE IF NOT EXISTS $tableFav (
             $columnFav TEXT NOT NULL,
             FOREIGN KEY ($columnId) REFERENCES $table($columnId)
           );''');
-    await db.execute('''
-CREATE TABLE IF NOT EXISTS $tablePack (
-            $columnId INTEGER NOT NULL,
-            $columnIdPack INTEGER PRIMARY KEY,
-            $columnPackName TEXT NOT NULL,
-            $columnPack TEXT NOT NULL,
-            FOREIGN KEY ($columnId) REFERENCES $table($columnId)
-          );''');
   }
-
-
   // Helper methods
 
   // Inserts a row in the database where each key in the Map is a column name
@@ -92,10 +77,6 @@ CREATE TABLE IF NOT EXISTS $tablePack (
   Future<int> insertFav(Map<String, dynamic> row) async {
     Database db = await instance.database;
     return await db.insert(tableFav, row);
-  }
-  Future<int> insertPack(Map<String, dynamic> row) async {
-    Database db = await instance.database;
-    return await db.insert(tablePack, row);
   }
   Future insertColumn(name) async {
     Database db = await instance.database;
@@ -116,28 +97,9 @@ CREATE TABLE IF NOT EXISTS $tablePack (
     Database db = await instance.database;
     return await db.query(tableFav);
   }
-  Future<List<Map<String, dynamic>>> queryAllRowsPack() async {
-    Database db = await instance.database;
-    return await db.query(tablePack);
-  }
   Future<List<Map<String, dynamic>>> queryColumns() async {//get all column names
     Database db = await instance.database;
     return await db.rawQuery("PRAGMA table_info(" + table + ")", null);
-  }
-
-  // All of the methods (insert, query, update, delete) can also be done using
-  // raw SQL commands. This method uses a raw query to give the row count.
-  Future<int> queryRowCount() async {
-    Database db = await instance.database;
-    return Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM $table'));
-  }
-  Future<int> queryRowCountFav() async {
-    Database db = await instance.database;
-    return Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM $tableFav'));
-  }
-  Future<int> queryRowCountPack() async {
-    Database db = await instance.database;
-    return Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM $tablePack'));
   }
 
   // We are assuming here that the id column in the map is set. The other
@@ -155,11 +117,6 @@ CREATE TABLE IF NOT EXISTS $tablePack (
     Database db = await instance.database;
     int id = row[columnIdFav];
     return await db.update(tableFav, row, where: '$columnIdFav = ?', whereArgs: [id]);
-  }
-  Future<int> updatePack(Map<String, dynamic> row) async {
-    Database db = await instance.database;
-    int id = row[columnIdPack];
-    return await db.update(tablePack, row, where: '$columnIdPack = ?', whereArgs: [id]);
   }
   //edit item page
   Future updateItemQuery(id,col,name) async {
@@ -184,34 +141,5 @@ CREATE TABLE IF NOT EXISTS $tablePack (
   Future<int> deleteFavName(String name) async {
     Database db = await instance.database;
     return await db.delete(tableFav, where: '$columnFavName = ?', whereArgs: [name]);
-  }
-  Future<int> deletePack(int id) async {
-    Database db = await instance.database;
-    return await db.delete(tablePack, where: '$columnIdPack = ?', whereArgs: [id]);
-  }
-  //debugging
-  Future deleteAllTable() async{
-    Database db = await instance.database;
-    return await db.rawQuery('DROP TABLE IF EXISTS $table;');
-  }
-  Future deleteAllTableFav() async{
-    Database db = await instance.database;
-    return await db.rawQuery('DROP TABLE IF EXISTS $tableFav;');
-  }
-  Future deleteAllTablePack() async{
-    Database db = await instance.database;
-    return await db.rawQuery('DROP TABLE IF EXISTS $tablePack;');
-  }
-  Future deleteAllTableRows() async{
-    Database db = await instance.database;
-    return await db.rawQuery('delete from $table;');
-  }
-  Future deleteAllTableFavRows() async{
-    Database db = await instance.database;
-    return await db.rawQuery('delete from $tableFav;');
-  }
-  Future deleteAllTablePackRows() async{
-    Database db = await instance.database;
-    return await db.rawQuery('delete from $tablePack;');
   }
 }
