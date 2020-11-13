@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:cat_it/services/db.dart';
 import 'package:cat_it/ui/uiAppHome.dart';
-import 'package:weather/weather.dart';
 
 class ViewerPage extends StatefulWidget {
   @override
