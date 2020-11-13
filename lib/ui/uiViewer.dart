@@ -196,33 +196,12 @@ class _ViewerPageState extends State<ViewerPage> {
                                                                         favList.add(DropdownMenuItem<String>(value: '$val', child: Text('$val')));
                                                                       });
                                                                     } else {
-                                                                      // setState(() {
-                                                                      //   _btnSelectedValFav = newValue;
-                                                                      // });
                                                                       _showConfirmFavDialog(context,dbMap[ind]['name'].toString(),newValue,ind);
                                                                     }
                                                                   }),
                                                                   items: favList,
                                                                 ),
                                                               ),
-                                                              // _btnSelectedValFav != null
-                                                              //     ? Container(
-                                                              //     height: (MediaQuery.of(context).size.width / 28) / 1,
-                                                              //     width: (MediaQuery.of(context).size.width / 1.019) / 4.19,
-                                                              //     child: RaisedButton(
-                                                              //       color: Colors.blue[200],
-                                                              //       child: Text(
-                                                              //         'SAVE',
-                                                              //         style: TextStyle(fontSize: 8),
-                                                              //       ),
-                                                              //       onPressed: () {
-                                                              //         _insert('$ind', '${dbMap[ind]['name'].toString()}', _btnSelectedValFav);
-                                                              //       },
-                                                              //     ))
-                                                              //     : Container(
-                                                              //   height: (MediaQuery.of(context).size.width / 28) / 1,
-                                                              //   width: (MediaQuery.of(context).size.width / 1.019) / 4.19,
-                                                              // ),
                                                               Container(
                                                                 width:
                                                                 (MediaQuery.of(context).size.width / 1.019) / 3,
