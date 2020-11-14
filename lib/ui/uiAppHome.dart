@@ -95,12 +95,12 @@ class _MyHomePageState extends State<MyHomePage> {
               bottomNavigationBar: BottomAppBar(
                 shape: CircularNotchedRectangle(),
                 notchMargin: 2.0,
-                child: new Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     IconButton(
-                      icon: Icon(Icons.favorite, color: Colors.blue),
+                      icon: Icon(Icons.list_alt, color: Colors.blue),
                       iconSize: 32.0,
                       onPressed: () {
                         if (dbMap != null) {
