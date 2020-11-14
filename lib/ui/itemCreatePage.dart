@@ -57,11 +57,14 @@ class _AddItemPageState extends State<AddItemPage> {
       floatingActionButton: FloatingActionButton(
           child: Icon(Icons.save),
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => AddItemPage()
-              ),
-            );
+            if (validateForm()) {
+              saveItem();
+            } else {
+              Fluttertoast.showToast(
+                msg: 'Please complete Photo, Name and Category fields',
+                toastLength: Toast.LENGTH_LONG,
+              );
+            }
           }),
           bottomNavigationBar: BottomAppBar(
             shape: CircularNotchedRectangle(),
