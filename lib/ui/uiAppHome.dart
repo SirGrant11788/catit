@@ -40,6 +40,7 @@ class _MyHomePageState extends State<MyHomePage> {
   List<String> columnList = List();
   List<Tab> catTabList = List<Tab>();
   List<Widget> contTabList = List<Widget>();
+  TextEditingController newCatalogueNameTextController = TextEditingController();
 
   void initState() {
     _query();
@@ -318,6 +319,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   _showCataloguesDialog(BuildContext context)  async {
     GlobalDbSelect dbSelect = GlobalDbSelect();
+    List dbsTemp = [];
+    dbsTemp.addAll(dbs);
+
+    dbsTemp.add('Add Catalogue');
               return showDialog(
               context: context,
               builder: (BuildContext context) {
@@ -327,14 +332,18 @@ class _MyHomePageState extends State<MyHomePage> {
                     width: double.minPositive,
                     child: ListView.builder(
                       shrinkWrap: true,
-                      itemCount: dbs.length,
+                      itemCount: dbsTemp.length,
                       itemBuilder: (BuildContext context, int index) {
                         return ListTile(
-                          title: Text(dbs[index].toString()),
+                          title: Text(dbsTemp[index].toString()),
                           onTap: () {
+                            if(dbsTemp[index].toString() == 'Add Catalogue' ){
+                              showCatalogueNameDialog(context, dbs);
+                            }else{
                               dbSelect.dbNo = index;
                               Navigator.push(context,
                                   MaterialPageRoute(builder: (context) => MyApp()));
+                            }
                           },
                         );
                       },
@@ -343,6 +352,37 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               });
     }
+
+  showCatalogueNameDialog(BuildContext context,List dbs) {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('NEW CATALOGUE'),
+            content: TextField(
+              controller: newCatalogueNameTextController,
+            ),
+            actions: <Widget>[
+              new FlatButton(
+                child: new Text('SAVE'),
+                onPressed: () {
+                  if(newCatalogueNameTextController.text != null || newCatalogueNameTextController.text != '') {
+                    dbs.add(newCatalogueNameTextController.text);
+                    storeNewCatalogue(dbs);
+                  }
+                  Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => MyApp()));
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  storeNewCatalogue(List dbs) async {
+    final localCache = await SharedPreferences.getInstance();
+    localCache.setStringList('databases', dbs);
+  }
 
     void getDbs() async {
       final localCache = await SharedPreferences.getInstance();
