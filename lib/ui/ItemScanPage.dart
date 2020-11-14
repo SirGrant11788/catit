@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:cat_it/models/Item.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:math';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 class ItemScanPage extends StatelessWidget {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
@@ -29,7 +31,7 @@ class ItemScanPage extends StatelessWidget {
         body: TabBarView(
           children: [
             buildQrScanner(context),
-            buildBarcodeScanner()
+            buildBarcodeScanner(context)
           ],
         )
       ),
@@ -46,7 +48,7 @@ class ItemScanPage extends StatelessWidget {
             children: [
               SizedBox(height: MediaQuery.of(context).size.height * 0.1),
               SizedBox(
-                height: 300.0,
+                height: 350.0,
                 child: Card(
                   child: Padding(
                     padding: const EdgeInsets.all(15.0),
@@ -60,6 +62,13 @@ class ItemScanPage extends StatelessWidget {
                             onQRViewCreated: (controller) {
                               _onQRViewCreated(controller, context);
                             },
+                            overlay: QrScannerOverlayShape(
+                              borderColor: Colors.red,
+                              borderRadius: 10,
+                              borderLength: 30,
+                              borderWidth: 10,
+                              cutOutSize: 250,
+                            ),
                           ),
                         ),
                       ],
@@ -85,8 +94,40 @@ class ItemScanPage extends StatelessWidget {
     });
   }
 
-  Widget buildBarcodeScanner() {
-    // TODO: Create barcode scanner widget
-    return Container();
+  Widget buildBarcodeScanner(BuildContext context) {
+    return Stack(
+      children: [
+        Container(width: double.infinity, height: MediaQuery.of(context).size.height * 0.35, color: Colors.blue),
+        Align(
+          alignment: Alignment.center,
+          child: Column(
+            children: [
+              SizedBox(height: MediaQuery.of(context).size.height * 0.1),
+              SizedBox(
+                height: 200.0,
+                width: 200.0,
+                child: Card(
+                  child: MaterialButton(
+                      child: Text('Scan Barcode'),
+                      onPressed: scanBarcode,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        )
+      ],
+    );
+  }
+
+  void scanBarcode() {
+    FlutterBarcodeScanner.scanBarcode(
+        '#fff44336',
+        'Cancel',
+        false,
+        ScanMode.BARCODE).then((value) {
+          Fluttertoast.showToast(msg: 'Barcode value: $value', toastLength: Toast.LENGTH_SHORT);
+          Fluttertoast.showToast(msg: 'Support to import items with barcodes is coming soon!', toastLength: Toast.LENGTH_SHORT);
+    });
   }
 }
