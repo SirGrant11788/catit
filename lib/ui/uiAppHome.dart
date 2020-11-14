@@ -319,7 +319,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   _showCataloguesDialog(BuildContext context)  async {
     GlobalDbSelect dbSelect = GlobalDbSelect();
-    List dbsTemp = dbs;
+    List dbsTemp = [];
+    dbsTemp.addAll(dbs);
+
     dbsTemp.add('Add Catalogue');
               return showDialog(
               context: context,
