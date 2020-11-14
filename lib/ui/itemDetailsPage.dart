@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cat_it/services/db.dart';
-import 'package:cat_it/ui/uiAppHome.dart';
+import 'package:cat_it/ui/homePage.dart';
 
 class EditProductPage extends StatefulWidget {
   final dynamic editDb;

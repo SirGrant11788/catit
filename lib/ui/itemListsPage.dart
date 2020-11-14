@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:cat_it/services/db.dart';
-import 'package:cat_it/ui/uiAppHome.dart';
+import 'package:cat_it/ui/homePage.dart';
 
 class ViewerPage extends StatefulWidget {
   @override
@@ -22,10 +22,6 @@ class _ViewerPageState extends State<ViewerPage> {
   List<ChoiceChip> chipCat = List<ChoiceChip>();
   List catList = List();
   List<String> prefListCat = List();
-
-  String weatherToday = "MyThreads";
-  String weatherIcon = '';
-
   void initState() {
     super.initState();
     callDb();
