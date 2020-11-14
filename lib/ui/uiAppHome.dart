@@ -15,15 +15,13 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'CatIt',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: MyHomePage(title: 'CatIt'),
+      home: MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  final String title;
+  MyHomePage({Key key}) : super(key: key);
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -32,14 +30,14 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   DatabaseHelper database = DatabaseHelper();
   List<String> dbs;
-
+  bool isLoadingData = false;
   var dbMap;
   var dbMapFav;
   String leading1, leading2;
-  List<String> favList = List();
-  List<String> columnList = List();
-  List<Tab> catTabList = List<Tab>();
-  List<Widget> contTabList = List<Widget>();
+  List<String> favList = [];
+  List<String> columnList = [];
+  List<Tab> categoryTabs = [];
+  List<Widget> contTabList = [];
   TextEditingController newCatalogueNameTextController = TextEditingController();
 
   void initState() {
@@ -57,14 +55,11 @@ class _MyHomePageState extends State<MyHomePage> {
       Tab(text: 'WELCOME'),
     ];
 
-    return FutureBuilder(
-        future: _query(),
-        builder: (context, snapshot) {
-          return DefaultTabController(
-            length: catTabList.length == 0 ? _kTabs.length : catTabList.length,
+    return DefaultTabController(
+            length: categoryTabs.length == 0 ? _kTabs.length : categoryTabs.length,
             child: Scaffold(
               appBar: AppBar(
-                title: Text('Title'),
+                title: Text('CatIt'),
                 actions: [
                   PopupMenuButton<String>(
                     onSelected: (value) {
@@ -86,7 +81,43 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ]
               ),
-              body: new ListView(
+              floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+              floatingActionButton: FloatingActionButton(
+                  child: Icon(Icons.add),
+                  mini: true,
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AddItemPage()
+                      ),
+                    );
+                  }),
+              bottomNavigationBar: BottomAppBar(
+                shape: CircularNotchedRectangle(),
+                notchMargin: 2.0,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    IconButton(
+                      icon: Icon(Icons.list_alt, color: Colors.blue),
+                      iconSize: 32.0,
+                      onPressed: () {
+                        if (dbMap != null) {
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) => ViewerPage()));
+                        } else {
+                          Fluttertoast.showToast(
+                            msg: 'Add Items First',
+                            toastLength: Toast.LENGTH_LONG,
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              body: (isLoadingData == false) ? new ListView(
                 children: <Widget>[
                   new Container(
                     alignment: Alignment.center,
@@ -102,10 +133,8 @@ class _MyHomePageState extends State<MyHomePage> {
                         return Container(
                             decoration: BoxDecoration(
                               border: Border(
-                                left:
-                                BorderSide(width: 1.0, color: Colors.blue),
-                                right:
-                                BorderSide(width: 1.0, color: Colors.blue),
+                                left: BorderSide(width: 1.0, color: Colors.blue),
+                                right: BorderSide(width: 1.0, color: Colors.blue),
                                 top: BorderSide(),
                               ),
                             ),
@@ -180,7 +209,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     alignment: Alignment.center,
                     child: TabBar(
                       isScrollable: true,
-                      tabs: catTabList.length == 0 ? _kTabs : catTabList,
+                      tabs: categoryTabs.length == 0 ? _kTabs : categoryTabs,
                     ),
                   ),
                   new Container(
@@ -192,103 +221,63 @@ class _MyHomePageState extends State<MyHomePage> {
                         1,
                     child: TabBarView(
                       children:
-                      catTabList.length == 0 ? _kTabPages : contTabList,
+                      categoryTabs.length == 0 ? _kTabPages : contTabList,
                     ),
                   ),
                 ],
-              ),
-              floatingActionButtonLocation:
-              FloatingActionButtonLocation.centerDocked,
-              floatingActionButton: FloatingActionButton(
-                child: const Icon(Icons.accessibility_new),
-                mini: true,
-                onPressed: () {
-                  if (dbMap != null) {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => ViewerPage()));
-                  } else {
-                    Fluttertoast.showToast(
-                      msg: 'Add Items First',
-                      toastLength: Toast.LENGTH_LONG,
-                    );
-                  }
-                },
-              ),
-              bottomNavigationBar: BottomAppBar(
-                shape: CircularNotchedRectangle(),
-                notchMargin: 2.0,
-                child: new Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    IconButton(
-                        icon: Icon(Icons.add),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    AddItemPage()), //AddProductPage()
-                          );
-                        }),
-                    IconButton(
-                      icon: Icon(Icons.shopping_basket),
-                      onPressed: () {
-                        //TODO website
-                        Fluttertoast.showToast(
-                          msg: 'button pressed. WEBSITE',
-                          toastLength: Toast.LENGTH_LONG,
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
+              ) : Center(child: CircularProgressIndicator(backgroundColor: Colors.blueAccent))
             ),
           );
-        });
   }
 
   _query() async {
+    setState(() {
+      isLoadingData = true;
+    });
+
     final allRows = await database.queryAllRows();
     final allRowsFav = await database.queryAllRowsFav();
-
-    columnList.clear();
     final allColumns = await database.queryColumns();
-    allColumns.forEach((column) {
-      columnList.add('${column['name']}');
-    });
-    if(columnList.length >=4){
-      leading1 = columnList[4];
-    }
-    catTabList.clear();
-    allRows.forEach((row) {
-      if (!catTabList.toString().contains('${row['cat']}')) {
-        catTabList.add(Tab(text: '${row['cat']}'));
+
+    setState(() {
+      columnList.clear();
+      allColumns.forEach((column) {
+        columnList.add(column['name']);
+      });
+      if(columnList.length >=4){
+        leading1 = columnList[4];
       }
+      categoryTabs.clear();
+      allRows.forEach((row) {
+        if (!categoryTabs.toString().contains(row['cat'])) {
+          categoryTabs.add(Tab(text: row['cat']));
+        }
+      });
+
+      favList.clear();
+      allRowsFav.forEach((element) {
+        if (!favList.toString().contains(element['fav'])) {
+          favList.add(element['fav']);
+        }
+      });
+
+      dbMap = allRows;
+      dbMapFav = allRowsFav;
+
+      loadList();
+
+      isLoadingData = false;
     });
-
-    favList.clear();
-    allRowsFav.forEach((element) {
-      if (!favList.toString().contains('${element['fav']}')) {
-        favList.add('${element['fav']}');
-      }
-    });
-
-    dbMap = allRows;
-    dbMapFav = allRowsFav;
-
-    loadList();
   }
 
   loadList() {
     contTabList.clear();
-    for (int i = 0; i < catTabList.length; i++) {
+    for (int i = 0; i < categoryTabs.length; i++) {
       contTabList.add(
         ListView.builder(
           itemCount: dbMap.length,
           itemBuilder: (ctx, index) {
-            return catTabList[i].text == dbMap[index]['cat']
+            return categoryTabs[i].text == dbMap[index]['cat']
                 ? new Card(
               child: new ListTile(
                 leading: '${dbMap[index]['pic'].toString()}' != "" ||
@@ -296,9 +285,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     ? Image.file(new File(
                     '${dbMap[index]['pic'].toString().substring(6).replaceAll("'", "")}'))
                     : CircleAvatar(child: Icon(Icons.accessibility)),
-                title: Text('${dbMap[index]['name']}'),
+                title: Text(dbMap[index]['name']),
                 subtitle: columnList[4] != null
-                    ? Text('${dbMap[index]['$leading1']}')
+                    ? Text(dbMap[index]['desc'])
                     : Text(''),
                 onTap: () {
                   Navigator.push(
@@ -388,7 +377,7 @@ class _MyHomePageState extends State<MyHomePage> {
       final localCache = await SharedPreferences.getInstance();
        dbs = localCache.getStringList('databases');
     }
-  }
+}
 
 
 
