@@ -79,7 +79,9 @@ class _EditProductPageState extends State<EditProductPage> {
               itemCount: widget.colDb.length,
               itemBuilder: (BuildContext context, int index) {
                 return widget.colDb[index] != '_id' &&
-                        widget.colDb[index] != 'pic'
+                        widget.colDb[index] != 'pic' &&
+                    widget.editDb[widget.colDb[index]] != '' &&
+                    widget.editDb[widget.colDb[index]] != null
                     ? Container(
                         padding: const EdgeInsets.all(8.0),
                         width: MediaQuery.of(context).size.width,
