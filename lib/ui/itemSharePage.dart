@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:cat_it/models/Item.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -49,7 +50,7 @@ class _ItemSharePageState extends State<ItemSharePage> {
 
   QrImage generateQrCode() {
     return QrImage(
-      data: widget.item.toString(),
+      data: jsonEncode(widget.item),
       version: QrVersions.auto,
       size: 200.0,
     );

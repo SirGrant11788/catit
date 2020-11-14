@@ -14,7 +14,11 @@ class Item {
     name = json['name'];
     description = json['description'];
     category = json['category'];
-    attributes = json['attributes'];
+
+    attributes = [];
+    json['attributes'].forEach((attribute) {
+      attributes.add(ItemAttribute.fromJson(attribute));
+    });
   }
 
   Map<String, dynamic> toJson() {
