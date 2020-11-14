@@ -242,6 +242,7 @@ class _AddItemPageState extends State<AddItemPage> {
         attributes.add(attribute['name'].toString());
         attributeControllers.add(TextEditingController());
       });
+
       categories = allCategories.map((category) => DropdownMenuItem<String>(value: category['cat'], child: Text(category['cat']))).toList();
       categories.add(DropdownMenuItem<String>(value: 'Add New Category', child: Text('Add New Category')));
     });
@@ -269,7 +270,7 @@ class _AddItemPageState extends State<AddItemPage> {
 
     await database.insert({
       DatabaseHelper.columnName: itemName,
-      DatabaseHelper.columnCat: selectedCategory,
+      // DatabaseHelper.columnCat: selectedCategory,//TODO db change
       DatabaseHelper.columnDesc: descriptionTextController.text,
       DatabaseHelper.columnPic: itemImage.uri.toString(),
     });
@@ -280,6 +281,21 @@ class _AddItemPageState extends State<AddItemPage> {
       }
     }
 
+    //insert into tableCat
+    // if (attributes.length != 0 || attributes.length != null) {
+    //   for (int i = 0; i < attributes.length; i++) {
+    //     if (attributes[i] != 'cat' &&
+    //         attributeControllers[i].text != '' &&
+    //         attributeControllers[i].text != null) {
+    //       await database.insertQueryCat(
+    //           attributes[i].toString(),
+    //           attributeControllers[i].text.toString(),
+    //           itemName
+    //       );
+    //     }
+    //   }
+    // }
+    //insert into table
     if (attributes.length != 0 || attributes.length != null) {
       for (int i = 0; i < attributes.length; i++) {
         if (attributes[i] != '_id' &&
@@ -298,11 +314,17 @@ class _AddItemPageState extends State<AddItemPage> {
       }
     }
 
+
+
     Fluttertoast.showToast(
       msg: 'Item $itemName Added',
       toastLength: Toast.LENGTH_SHORT,
     );
     Navigator.push(context, MaterialPageRoute(builder: (context) => MyApp()));
+  }
+
+  insertCat(String catName) async {
+    await database.insertQueryCat('cat');
   }
 
   bool validateForm() {
@@ -324,6 +346,9 @@ class _AddItemPageState extends State<AddItemPage> {
                 child: new Text('SAVE'),
                 onPressed: () {
                   Navigator.pop(context, newCategoryNameTextController.text);
+                  //todo save cat here
+                  insertCat(newCategoryNameTextController.text);
+                  //
                   newCategoryNameTextController.clear();
                 },
               ),

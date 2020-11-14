@@ -7,16 +7,16 @@ import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
 
-  static final _databaseName = "MyDatabase.db";//use loacal preff to store multiple names for dbs
   static final _databaseVersion = 1;
 
   static final table = 'my_table';//main table
   static final tableFav = 'fav_table';//fav table
+  static final tableCat = 'cat_table';//cat table
 
   //main table
   static final columnId = '_id';
   static final columnName = 'name';
-  static final columnCat = 'cat';
+  // static final columnCat = 'cat';
   static final columnDesc = 'desc';
   static final columnPic = 'pic';
 
@@ -24,6 +24,10 @@ class DatabaseHelper {
   static final columnIdFav = '_id_fav';
   static final columnFav = 'fav';
   static final columnFavName = 'fav_name';
+
+  //cat table
+  static final columnIdCat = '_id_cat';
+  static final columnCatName = 'cat';
 
   // only have a single app-wide reference to the database
   Database _database;
@@ -41,10 +45,10 @@ class DatabaseHelper {
     List <String> dbs = [];
     final localCache = await SharedPreferences.getInstance();
     if (localCache.getStringList('databases') == null) {
-    dbs.add("Wardrobe");
-    dbs.add("Office");
-    dbs.add("Pantry");
-    localCache.setStringList('databases', dbs);
+      dbs.add("Wardrobe");
+      dbs.add("Office");
+      dbs.add("Pantry");
+      localCache.setStringList('databases', dbs);
     }else{
       dbs = (localCache.getStringList('databases'));
     }
@@ -61,20 +65,23 @@ class DatabaseHelper {
         onCreate: _onCreate);
   }
 
-  // SQL code to create the database table todo check auto NOT NULL AUTO_INCREMENT
   Future _onCreate(Database db, int version) async {
+    await db.execute('''
+          CREATE TABLE IF NOT EXISTS $tableCat (
+            $columnIdCat INTEGER PRIMARY KEY AUTOINCREMENT,
+            $columnCatName TEXT NOT NULL
+          );''');
     await db.execute('''
           CREATE TABLE IF NOT EXISTS $table (
             $columnId INTEGER PRIMARY KEY,
             $columnName TEXT NOT NULL,
-            $columnCat TEXT NOT NULL,
-            
+            $columnIdCat INTEGER,
             $columnDesc TEXT,
-            $columnPic TEXT
+            $columnPic TEXT,
+            FOREIGN KEY ($columnIdCat) REFERENCES $tableCat($columnIdCat)
           );''');
-
     await db.execute('''
-CREATE TABLE IF NOT EXISTS $tableFav (
+          CREATE TABLE IF NOT EXISTS $tableFav (
             $columnId INTEGER NOT NULL,
             $columnIdFav INTEGER PRIMARY KEY,
             $columnFavName TEXT NOT NULL,
@@ -94,6 +101,10 @@ CREATE TABLE IF NOT EXISTS $tableFav (
   Future<int> insertFav(Map<String, dynamic> row) async {
     Database db = await database;
     return await db.insert(tableFav, row);
+
+  }Future<int> insertCat(Map<String, dynamic> row) async {
+    Database db = await database;
+    return await db.insert(tableCat, row);
   }
   Future insertColumn(name) async {
     Database db = await database;
@@ -101,14 +112,22 @@ CREATE TABLE IF NOT EXISTS $tableFav (
   }
   Future insertQuery(col,name,item) async {
     Database db = await database;
-    return await db.rawQuery('''UPDATE $table SET $col = '$name' WHERE $columnName = '$item' ''');//need to change from name to id
+    // return await db.rawQuery('''UPDATE $table SET $col = '$name' FROM $table LEFT JOIN $tableCat ON $table.$columnIdCat = $tableCat.$columnIdCat WHERE $columnName = '$item' OR $columnCatName = '$item''');
+    return await db.rawQuery('''UPDATE $table SET $col = '$name' WHERE $columnName = '$item' ''');
   }
+  Future insertQueryCat(name) async {
+    Database db = await database;
+    // return await db.rawQuery('''UPDATE $table SET $col = '$name' FROM $table LEFT JOIN $tableCat ON $table.$columnIdCat = $tableCat.$columnIdCat WHERE $columnName = '$item' OR $columnCatName = '$item''');
+    return await db.rawQuery('''INSERT INTO $tableCat ($columnCatName) VALUES ('$name')''');
+  }
+
 
   // All of the rows are returned as a list of maps, where each map is
   // a key-value list of columns.
   Future<List<Map<String, dynamic>>> queryAllRows() async {
     Database db = await database;
-    return await db.query(table);
+    // return await db.query(table);
+    return await db.rawQuery("SELECT * FROM $table LEFT JOIN $tableCat ON $table.$columnIdCat = $tableCat.$columnIdCat");
   }
   Future<List<Map<String, dynamic>>> queryAllRowsFav() async {
     Database db = await database;
@@ -129,6 +148,10 @@ CREATE TABLE IF NOT EXISTS $tableFav (
   Future updateQueryFavName(id,name) async {
     Database db = await database;
     return await db.rawQuery('''UPDATE $tableFav SET $columnFavName = '$name' WHERE $columnId = $id''');
+  }
+  Future updateQueryCatName(id,name) async {
+    Database db = await database;
+    return await db.rawQuery('''UPDATE $tableCat SET $columnCatName = '$name' WHERE $columnIdCat = $id''');
   }
   Future<int> updateFav(Map<String, dynamic> row) async {
     Database db = await database;
@@ -154,6 +177,10 @@ CREATE TABLE IF NOT EXISTS $tableFav (
   Future<int> deleteFav(int id) async {
     Database db = await database;
     return await db.delete(tableFav, where: '$columnIdFav = ?', whereArgs: [id]);
+  }
+  Future<int> deleteCat(int id) async {
+    Database db = await database;
+    return await db.delete(tableCat, where: '$columnIdCat = ?', whereArgs: [id]);
   }
   Future<int> deleteFavName(String name) async {
     Database db = await database;
