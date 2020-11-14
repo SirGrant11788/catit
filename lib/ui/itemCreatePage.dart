@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cat_it/ui/ItemScanPage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
@@ -12,19 +13,9 @@ class AddItemPage extends StatefulWidget {
 
 class _AddItemPageState extends State<AddItemPage> {
   DatabaseHelper database = DatabaseHelper();
+
   List<String> attributes = [];
   List<String> attributesNew = [];
-
-  List<String> columnList = List();
-  List<String> columnListNew = List();
-  List<TextEditingController> _controllers = new List();
-  TextEditingController _textFieldControllerDialog = TextEditingController();
-  TextEditingController _textFieldControllerDialogCol = TextEditingController();
-  TextEditingController _textFieldControllerName = TextEditingController();
-  TextEditingController _textFieldControllerDesc = TextEditingController();
-  File _cameraImage;
-  String _btnSelectedValCat;
-  String temp;
 
   List<TextEditingController> attributeControllers = [];
   TextEditingController newCategoryNameTextController = TextEditingController();
@@ -58,6 +49,9 @@ class _AddItemPageState extends State<AddItemPage> {
               resizeToAvoidBottomInset: true,
               appBar: AppBar(
                 title: Text('Add Item'),
+                actions: [
+                  IconButton(icon: Icon(Icons.get_app), onPressed: navigateToItemScanPage)
+                ],
               ),
               body: SingleChildScrollView(
                 child: Column(children: <Widget>[
@@ -242,7 +236,11 @@ class _AddItemPageState extends State<AddItemPage> {
         attributes.add(attribute['name'].toString());
         attributeControllers.add(TextEditingController());
       });
-      categories = allCategories.map((category) => DropdownMenuItem<String>(value: category['cat'], child: Text(category['cat']))).toList();
+      allCategories.forEach((category) {
+        if (categories.indexWhere((element) => element.value == category['cat']) == -1) {
+          categories.add(DropdownMenuItem<String>(value: category['cat'], child: Text(category['cat'])));
+        }
+      });
       categories.add(DropdownMenuItem<String>(value: 'Add New Category', child: Text('Add New Category')));
     });
   }
@@ -353,5 +351,23 @@ class _AddItemPageState extends State<AddItemPage> {
             ],
           );
         });
+  }
+
+  void navigateToItemScanPage() {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => ItemScanPage())).then((item) {
+      setState(() {
+        itemNameTextController.text = item.name;
+        descriptionTextController.text = item.description;
+        selectedCategory = item.category;
+
+        attributes = [];
+        attributeControllers = [];
+        item.attributes.forEach((attribute) {
+          attributes.add(attribute.name);
+          attributeControllers.add(TextEditingController());
+          attributeControllers[attributeControllers.length-1].text = attribute.value;
+        });
+      });
+    });
   }
 }
