@@ -1,10 +1,10 @@
 import 'dart:io';
-import 'package:cat_it/ui/ItemScanPage.dart';
+import 'package:cat_it/ui/itemScanPage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cat_it/services/db.dart';
-import 'package:cat_it/ui/uiAppHome.dart';
+import 'package:cat_it/ui/homePage.dart';
 
 class AddItemPage extends StatefulWidget {
   @override
@@ -14,16 +14,16 @@ class AddItemPage extends StatefulWidget {
 class _AddItemPageState extends State<AddItemPage> {
   DatabaseHelper database = DatabaseHelper();
 
+  List<String> allAttributes = [];
   List<String> attributes = [];
-  List<String> attributesNew = [];
 
   List<TextEditingController> attributeControllers = [];
   TextEditingController newCategoryNameTextController = TextEditingController();
   TextEditingController newAttributeTextController = TextEditingController();
-  TextEditingController itemNameTextController = TextEditingController();
+  TextEditingController nameTextController = TextEditingController();
   TextEditingController descriptionTextController = TextEditingController();
 
-  List<DropdownMenuItem<String>> categories = [];
+  List<DropdownMenuItem<String>> categoryOptions = [];
   String selectedCategory;
 
   File itemImage;
@@ -32,14 +32,14 @@ class _AddItemPageState extends State<AddItemPage> {
   void dispose() {
     newCategoryNameTextController.dispose();
     newAttributeTextController.dispose();
-    itemNameTextController.dispose();
+    nameTextController.dispose();
     descriptionTextController.dispose();
     attributeControllers.forEach((controller) => controller.dispose());
     super.dispose();
   }
 
   void initState() {
-    getAttributesAndCategories();
+    getAttributesAndCategoryOptions();
     super.initState();
   }
 
@@ -50,9 +50,24 @@ class _AddItemPageState extends State<AddItemPage> {
               appBar: AppBar(
                 title: Text('Add Item'),
                 actions: [
-                  IconButton(icon: Icon(Icons.get_app), onPressed: navigateToItemScanPage)
+                  IconButton(icon: Icon(Icons.get_app), onPressed: navigateToItemScanPage, )
                 ],
               ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.save),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AddItemPage()
+              ),
+            );
+          }),
+          bottomNavigationBar: BottomAppBar(
+            shape: CircularNotchedRectangle(),
+            notchMargin: 2.0,
+            child: FlatButton(),
+          ),
               body: SingleChildScrollView(
                 child: Column(children: <Widget>[
                     Padding(
@@ -79,7 +94,7 @@ class _AddItemPageState extends State<AddItemPage> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: TextFormField(
-                        controller: itemNameTextController,
+                        controller: nameTextController,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           hintText: 'Item Name',
@@ -112,9 +127,9 @@ class _AddItemPageState extends State<AddItemPage> {
                           ),
                           onChanged: ((String newValue) {
                             if (newValue == 'Add New Category') {
-                              showCategoryNameDialog(context).then((result) {
+                              showCategoryNameDialog(context, null).then((result) {
                                 setState(() {
-                                  categories.add(DropdownMenuItem<String>(value: result, child: Text(result)));
+                                  categoryOptions.add(DropdownMenuItem<String>(value: result, child: Text(result)));
                                   selectedCategory = result;
                                 });
                               });
@@ -124,7 +139,7 @@ class _AddItemPageState extends State<AddItemPage> {
                               });
                             }
                           }),
-                          items: categories,
+                          items: categoryOptions,
                         ),
                       ),
                     ),
@@ -143,9 +158,7 @@ class _AddItemPageState extends State<AddItemPage> {
                             setState(() {
                               attributeControllers.add(new TextEditingController());
                               attributes.add(result);
-                              attributesNew.add(result);
                             });
-
                           });
                         },
                         child: Text(
@@ -198,50 +211,27 @@ class _AddItemPageState extends State<AddItemPage> {
                               : Container();
                         },
                       ),
-                    ),
-                    ButtonBar(
-                      alignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
-                        RaisedButton(
-                          child: Text('SAVE'),
-                          color: Colors.blue,
-                          highlightColor: Colors.grey,
-                          shape: new RoundedRectangleBorder(
-                            borderRadius: new BorderRadius.circular(30.0),
-                          ),
-                          onPressed: () {
-                            if (validateForm()) {
-                              addItem();
-                            } else {
-                              Fluttertoast.showToast(
-                                msg: 'Please complete Photo, Name and Category fields',
-                                toastLength: Toast.LENGTH_LONG,
-                              );
-                            }
-                          },
-                        ),
-                      ],
-                    ),
+                    )
                   ]),
               ),
               );
   }
 
-  void getAttributesAndCategories() async {
-    final allAttributes = await database.queryColumns();
+  void getAttributesAndCategoryOptions() async {
+    final attributesResult = await database.queryColumns();
     final allCategories = await database.queryAllRows();
 
     setState(() {
-      allAttributes.forEach((attribute) {
-        attributes.add(attribute['name'].toString());
+      attributesResult.forEach((attribute) {
+        allAttributes.add(attribute['name'].toString());
         attributeControllers.add(TextEditingController());
       });
       allCategories.forEach((category) {
-        if (categories.indexWhere((element) => element.value == category['cat']) == -1) {
-          categories.add(DropdownMenuItem<String>(value: category['cat'], child: Text(category['cat'])));
+        if (categoryOptions.indexWhere((element) => element.value == category['cat']) == -1) {
+          categoryOptions.add(DropdownMenuItem<String>(value: category['cat'], child: Text(category['cat'])));
         }
       });
-      categories.add(DropdownMenuItem<String>(value: 'Add New Category', child: Text('Add New Category')));
+      categoryOptions.add(DropdownMenuItem<String>(value: 'Add New Category', child: Text('Add New Category')));
     });
   }
 
@@ -262,8 +252,8 @@ class _AddItemPageState extends State<AddItemPage> {
     });
   }
 
-  void addItem() async {
-    final itemName = itemNameTextController.text;
+  void saveItem() async {
+    final itemName = nameTextController.text;
 
     await database.insert({
       DatabaseHelper.columnName: itemName,
@@ -272,6 +262,7 @@ class _AddItemPageState extends State<AddItemPage> {
       DatabaseHelper.columnPic: itemImage.uri.toString(),
     });
 
+    List<String> attributesNew = attributes.where((attribute) => !allAttributes.contains(attribute)).toList();
     if (attributesNew.length != 0 || attributesNew.length != null) {
       for (int i = 0; i < attributesNew.length; i++) {
         await database.insertColumn(attributesNew[i].toString());
@@ -304,10 +295,12 @@ class _AddItemPageState extends State<AddItemPage> {
   }
 
   bool validateForm() {
-    return (itemNameTextController.text != null && selectedCategory != null && itemImage != null);
+    return (nameTextController.text != null && selectedCategory != null && itemImage != null);
   }
 
-  showCategoryNameDialog(BuildContext context) {
+  showCategoryNameDialog(BuildContext context, String value) {
+    if (value is String && value.length > 0) newCategoryNameTextController.text = value;
+
     return showDialog(
         context: context,
         builder: (context) {
@@ -356,9 +349,8 @@ class _AddItemPageState extends State<AddItemPage> {
   void navigateToItemScanPage() {
     Navigator.push(context, MaterialPageRoute(builder: (context) => ItemScanPage())).then((item) {
       setState(() {
-        itemNameTextController.text = item.name;
+        nameTextController.text = item.name;
         descriptionTextController.text = item.description;
-        selectedCategory = item.category;
 
         attributes = [];
         attributeControllers = [];
@@ -367,6 +359,17 @@ class _AddItemPageState extends State<AddItemPage> {
           attributeControllers.add(TextEditingController());
           attributeControllers[attributeControllers.length-1].text = attribute.value;
         });
+
+        if (categoryOptions.indexWhere((element) => element.value == item.category) != -1) {
+          selectedCategory = item.category;
+        } else {
+          showCategoryNameDialog(context, item.category).then((result) {
+            setState(() {
+              categoryOptions.add(DropdownMenuItem<String>(value: result, child: Text(result)));
+              selectedCategory = result;
+            });
+          });
+        }
       });
     });
   }
