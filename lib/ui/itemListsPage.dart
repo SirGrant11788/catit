@@ -51,7 +51,7 @@ class _ViewerPageState extends State<ViewerPage> {
                     size: 20.0,
                   ),
                   label: Text('')),
-              title: Text('Title')
+              title: Text('Lists')
             ),
             body: SingleChildScrollView(
               child: Column(
@@ -66,8 +66,8 @@ class _ViewerPageState extends State<ViewerPage> {
                     children: [
                       new Center(
                         child: new Container(
-                          width: MediaQuery.of(context).size.height *
-                              0.5172, //0.5294
+                          width: MediaQuery.of(context).size.width *
+                              1,
                           color: Colors.blueGrey[50],
                           height: MediaQuery.of(context).size.height * 0.8425,
                           child: ListView.builder(
@@ -135,8 +135,8 @@ class _ViewerPageState extends State<ViewerPage> {
                                                                       fontSize: 14.0,
                                                                     ),
                                                                   ),
-                                                                  new TextSpan(text: '${dbMap[ind]['size'].toString()} ${dbMap[ind]['fit'].toString()}\n', style: new TextStyle(fontSize: 12.0, color: Colors.black87)),
-                                                                  new TextSpan(text: '${dbMap[ind]['desc'].toString()}', style: new TextStyle(fontSize: 11.0, color: Colors.black54)),
+                                                                  // new TextSpan(text: '${dbMap[ind][3].toString()} ${dbMap[ind]['fit'].toString()}\n', style: new TextStyle(fontSize: 12.0, color: Colors.black87)),
+                                                                  new TextSpan(text: '${dbMap[ind]['desc'].toString()}', style: new TextStyle(fontSize: 12.0, color: Colors.black87)),
                                                                 ]),
                                                             textAlign:
                                                             TextAlign.center,
@@ -202,7 +202,7 @@ class _ViewerPageState extends State<ViewerPage> {
                                                                 width:
                                                                 (MediaQuery.of(context).size.width / 1.019) / 3,
                                                                 height:
-                                                                (MediaQuery.of(context).size.width / 1.019) / 3.9,
+                                                                MediaQuery.of(context).size.height / 6.3,
                                                                 child:
                                                                 ListView.builder(
                                                                   shrinkWrap: true,
@@ -227,7 +227,7 @@ class _ViewerPageState extends State<ViewerPage> {
                                                                       child: ListTile(
                                                                         title: Text(
                                                                           '${dbMapFav[i]['fav'].toString()}',
-                                                                          style: TextStyle(fontSize: 10, color: Colors.black),
+                                                                          style: TextStyle(fontSize: 14, color: Colors.black),
                                                                         ),
                                                                       ),
                                                                     )
@@ -353,6 +353,7 @@ class _ViewerPageState extends State<ViewerPage> {
       child: Text("Save"),
       onPressed:  () {
         _insert('$index', '$item', fav);
+        Navigator.pop(context);
       },
     );
 
